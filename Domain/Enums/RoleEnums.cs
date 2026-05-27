@@ -1,0 +1,1 @@
+public enum Role { Employee = 1, Accountant = 2 }
