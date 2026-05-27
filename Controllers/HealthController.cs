@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/health")]
+[AllowAnonymous]
 public class HealthController: ControllerBase
 {
   private readonly AppDbContext _db;
   public HealthController(AppDbContext db) => _db = db;
 
   [HttpGet]
-  [Authorize]
   public async Task<IActionResult> Get(CancellationToken ct)
   {
     var canConnect = await _db.Database.CanConnectAsync(ct);
