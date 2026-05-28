@@ -1,0 +1,1 @@
+public record CreateRequestDto(int TypeId, string Reason, int Quantity, string? CustomTemplate);
