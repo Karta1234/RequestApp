@@ -34,4 +34,10 @@ public class RequestController: ControllerBase
   {
     return Ok(await _service.GetByIdAsync(id, ct));
   }
+
+  [HttpPatch("{id:int}/status")]
+  [Authorize(Roles = "Accountant")]
+   public async Task<ActionResult<RequestDto>> ChangeStatus(
+      int id, int newStatusId, CancellationToken ct)
+      => Ok(await _service.ChangeStatusAsync(id, newStatusId, ct));
 }

@@ -9,6 +9,7 @@ public class RequestService : IRequestService
     _db = db;
     _currentUser = currentUser;
   }
+
   public async Task<RequestDto> CreateAsync(CreateRequestDto dto, CancellationToken ct)
   {
     var type = await _db.RequestTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId, ct);
@@ -77,5 +78,38 @@ public class RequestService : IRequestService
         request.Reason, request.Quantity, request.CustomTemplate,
         request.EmployeeId, request.IsActive))
       .ToListAsync(ct);
+  }
+
+  public async Task<RequestDto> ChangeStatusAsync(int requestId, int newStatusId, CancellationToken ct)
+  {
+    var newStatus = await _db.RequestStatuses
+        .FirstOrDefaultAsync(s => s.Id == newStatusId, ct);
+    if (newStatus is null)
+        throw new NotFoundException($"Статус {newStatusId} не найден");
+    var request = await _db.Requests
+      .Include(r => r.Type)
+      .FirstOrDefaultAsync(r => r.Id == requestId, ct);
+
+    if (request is null)
+      throw new NotFoundException($"Заявка {requestId} не найдена");
+
+    if (!request.IsActive)
+          throw new ConflictException("Нельзя менять статус завершённой заявки");
+
+    var oldStatusId = request.StatusId;
+
+    request.ChangeStatus(newStatus);
+
+    _db.RequestStatusHistories.Add(new RequestStatusHistory {
+        RequestId = request.Id,
+        FromStatusId = oldStatusId,
+        ToStatusId = newStatusId,
+        ChangedBy = _currentUser.UserId,
+        ChangedAt = DateTime.UtcNow
+    });
+
+    await _db.SaveChangesAsync(ct);
+
+    return RequestDto.MapToDto(request, request.Type, newStatus);
   }
 }
