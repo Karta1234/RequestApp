@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// EF Core-реализация <see cref="IRequestService"/>.
+/// Использует <see cref="AppDbContext"/> для доступа к данным и <see cref="ICurrentUser"/>
+/// для получения id/роли текущего запроса.
+/// </summary>
 public class RequestService : IRequestService
 {
   private readonly AppDbContext _db;
@@ -10,6 +15,7 @@ public class RequestService : IRequestService
     _currentUser = currentUser;
   }
 
+  /// <inheritdoc/>
   public async Task<RequestDto> CreateAsync(CreateRequestDto dto, CancellationToken ct)
   {
     var type = await _db.RequestTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId, ct);
@@ -39,6 +45,7 @@ public class RequestService : IRequestService
     return RequestDto.MapToDto(request, type, RequestStatuses.New);
   }
 
+  /// <inheritdoc/>
   public async Task<IReadOnlyList<RequestDto>> GetAllAsync(CancellationToken ct)
   {
     return await _db.Requests
@@ -51,6 +58,7 @@ public class RequestService : IRequestService
       .ToListAsync(ct);
   }
 
+  /// <inheritdoc/>
   public async Task<RequestDto> GetByIdAsync(int id, CancellationToken ct)
   {
     var userId = _currentUser.UserId;
@@ -67,6 +75,7 @@ public class RequestService : IRequestService
     return result;
   }
 
+  /// <inheritdoc/>
   public async Task<IReadOnlyList<RequestDto>> GetByUserAsync(CancellationToken ct)
   {
     var userId = _currentUser.UserId;
@@ -80,6 +89,7 @@ public class RequestService : IRequestService
       .ToListAsync(ct);
   }
 
+  /// <inheritdoc/>
   public async Task<RequestDto> ChangeStatusAsync(int requestId, int newStatusId, CancellationToken ct)
   {
     var newStatus = await _db.RequestStatuses
