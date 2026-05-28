@@ -8,7 +8,7 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
       NotFoundException => (404, exception.Message),
       ConflictException => (409, exception.Message),
-      ValidationException => (403, exception.Message),
+      ValidationException => (400, exception.Message),
       _ => (0, "")
     };
     if (status == 0) return false;
